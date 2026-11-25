@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import {
   createMatriculado,
@@ -92,14 +93,23 @@ export function MatriculadosTable({
                       {m.estado}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => setEditing(m)}
-                      className="rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                    >
-                      Editar
-                    </button>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      <Link
+                        href={`/matriculados/${m.id}/historial`}
+                        aria-label={`Historial de cuotas de ${m.apellido}, ${m.nombre}`}
+                        className="whitespace-nowrap rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                      >
+                        Historial de cuotas
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setEditing(m)}
+                        className="rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                      >
+                        Editar
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

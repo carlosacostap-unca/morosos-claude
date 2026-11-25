@@ -1,0 +1,8 @@
+schema: spec-driven
+
+context: |
+  Language: Spanish
+  All artifacts must be written in Spanish.
+  Keep OpenSpec structural headings and SHALL/MUST keywords in English.
+  Cobros y Morosos es una aplicación del CPCEC para administrar el padrón de matriculados y registrar los pagos de sus cuotas mensuales.
+  La aplicación usa Next.js App Router, React y TypeScript. Supabase administra las sesiones y la base PostgreSQL.

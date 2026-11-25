@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { MEDIOS, formatFecha, formatPeriodo, money } from "@/lib/cuotas";
 import { registrarPagos, type PagosFormState } from "./actions";
 
 export type FilaPago = {
@@ -13,39 +14,13 @@ export type FilaPago = {
   pago: { monto: number; fecha_pago: string; medio: string } | null;
 };
 
-const MEDIOS: Record<string, string> = {
-  efectivo: "Efectivo",
-  transferencia: "Transferencia",
-  debito: "Débito",
-  otro: "Otro",
-};
-
 const inputClass =
   "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50";
-
-const money = new Intl.NumberFormat("es-AR", {
-  style: "currency",
-  currency: "ARS",
-});
 
 function shiftPeriodo(periodo: string, delta: number) {
   const [y, m] = periodo.split("-").map(Number);
   const d = new Date(Date.UTC(y, m - 1 + delta, 1));
   return d.toISOString().slice(0, 7);
-}
-
-function formatPeriodo(periodo: string) {
-  const [y, m] = periodo.split("-").map(Number);
-  const name = new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("es-AR", {
-    month: "long",
-    timeZone: "UTC",
-  });
-  return `${name.charAt(0).toUpperCase()}${name.slice(1)} ${y}`;
-}
-
-function formatFecha(iso: string) {
-  const [y, m, d] = iso.split("-");
-  return `${d}/${m}/${y}`;
 }
 
 export function PagosPanel({
