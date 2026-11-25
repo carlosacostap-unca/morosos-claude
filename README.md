@@ -35,6 +35,28 @@ En una base recién preparada hay **70 matriculados** y **739 pagos** de diciemb
 | Pago tardío y cambio de año | En `DEMO-0022`, la cuota de diciembre de 2025 figura pagada el 07/01/2026. |
 | Bajas con y sin historial | En 2025, `DEMO-0056` muestra sus pagos históricos y `DEMO-0059` muestra el historial vacío. |
 
+## Hermes y Signal
+
+El servidor MCP publica `resumen_cobranzas` en `/api/mcp/cobranzas`. El parámetro `periodo` tiene formato `AAAA-MM` y el resultado contiene las cantidades de cuotas y el total cobrado en ARS.
+
+1. Aplicá la [migración del MCP](supabase/migrations/20261125000000_hermes_resumen_cobranzas.sql) en Supabase. El rol `hermes_cobranzas_lector` queda creado sin acceso de inicio de sesión. Asignale una contraseña desde una conexión administrativa de PostgreSQL con `\password hermes_cobranzas_lector` en `psql` y habilitá su inicio de sesión con `ALTER ROLE hermes_cobranzas_lector LOGIN`.
+2. Configurá en el servidor de Matriculados `COBRANZAS_MCP_DATABASE_URL` con la conexión PostgreSQL de ese rol y `COBRANZAS_MCP_TOKEN` con un token aleatorio exclusivo de la integración. Si la conexión requiere un certificado CA de Supabase, guardá el PEM en `COBRANZAS_MCP_DATABASE_CA`. La conexión valida el certificado TLS.
+3. Guardá en el entorno del perfil de Hermes únicamente el mismo `COBRANZAS_MCP_TOKEN`. Agregá esta entrada a `mcp_servers` en su configuración y probala desde la pantalla **MCP** del panel. [MCP en Hermes](https://hermes-agent.nousresearch.com/docs/user-guide/features/mcp)
+
+```yaml
+mcp_servers:
+  cobranzas:
+    url: https://matriculados.acostaparra.com/api/mcp/cobranzas
+    headers:
+      Authorization: "Bearer ${COBRANZAS_MCP_TOKEN}"
+    tools:
+      include: [resumen_cobranzas]
+      prompts: false
+      resources: false
+```
+
+Para Signal, ejecutá `signal-cli` en la red privada de Hermes con almacenamiento persistente. Vinculá la cuenta desde **Signal → Dispositivos vinculados**. En **Channels → Signal**, ingresá la URL interna del daemon, tu número en **Signal account number** y ese mismo número en **Allowed users**. Con una cuenta personal, probá en **Nota para mí** con «¿Cuántas cuotas quedaron pendientes en noviembre de 2026?». [Signal en Hermes](https://hermes-agent.nousresearch.com/docs/user-guide/messaging/signal)
+
 ## Getting Started
 
 First, run the development server:
