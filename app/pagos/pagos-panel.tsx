@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MEDIOS, formatFecha, formatPeriodo, money } from "@/lib/cuotas";
+import { MEDIOS, PERIODO_MINIMO_CUOTAS, formatFecha, formatPeriodo, money } from "@/lib/cuotas";
 import { registrarPagos, type PagosFormState } from "./actions";
 
 export type FilaPago = {
@@ -95,8 +95,9 @@ export function PagosPanel({
         <button
           type="button"
           aria-label="Mes anterior"
+          disabled={periodo === PERIODO_MINIMO_CUOTAS}
           onClick={() => goTo(shiftPeriodo(periodo, -1))}
-          className="h-10 w-10 rounded-full border border-zinc-300 text-lg hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+          className="h-10 w-10 rounded-full border border-zinc-300 text-lg enabled:hover:bg-zinc-100 disabled:opacity-40 dark:border-zinc-700 dark:enabled:hover:bg-zinc-800"
         >
           ‹
         </button>
@@ -114,8 +115,9 @@ export function PagosPanel({
         <input
           type="month"
           aria-label="Elegir período"
+          min={PERIODO_MINIMO_CUOTAS}
           value={periodo}
-          onChange={(e) => e.target.value && goTo(e.target.value)}
+          onChange={(e) => e.target.value && e.target.validity.valid && goTo(e.target.value)}
           className={`${inputClass} !w-auto`}
         />
       </div>

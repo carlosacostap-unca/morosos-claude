@@ -1,3 +1,5 @@
+export const PERIODO_MINIMO_CUOTAS = "2026-03";
+
 export const MEDIOS: Record<string, string> = {
   efectivo: "Efectivo",
   transferencia: "Transferencia",

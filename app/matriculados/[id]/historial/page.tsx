@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { MEDIOS, formatFecha, formatPeriodo, money } from "@/lib/cuotas";
+import { MEDIOS, PERIODO_MINIMO_CUOTAS, formatFecha, formatPeriodo, money } from "@/lib/cuotas";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "../../../site-header";
 
@@ -14,6 +14,7 @@ type HistorialProps = {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ANIO = /^(?!0000)[0-9]{4}$/;
+const ANIO_MINIMO = PERIODO_MINIMO_CUOTAS.slice(0, 4);
 
 async function HistorialContent({ params, searchParams }: HistorialProps) {
   const { id } = await params;
@@ -22,10 +23,13 @@ async function HistorialContent({ params, searchParams }: HistorialProps) {
   await connection();
   const { anio: anioParam } = await searchParams;
   const mesActual = new Date().toISOString().slice(0, 7);
-  const anio =
+  const anioSolicitado =
     typeof anioParam === "string" && ANIO.test(anioParam)
       ? anioParam
       : mesActual.slice(0, 4);
+  const anio = anioSolicitado < ANIO_MINIMO ? ANIO_MINIMO : anioSolicitado;
+  const primerPeriodo = anio === ANIO_MINIMO ? PERIODO_MINIMO_CUOTAS : `${anio}-01`;
+  const primerMes = Number(primerPeriodo.slice(5));
 
   const supabase = await createClient();
   const [matriculado, pagos] = await Promise.all([
@@ -38,7 +42,7 @@ async function HistorialContent({ params, searchParams }: HistorialProps) {
       .from("pagos")
       .select("periodo, monto, fecha_pago, medio")
       .eq("matriculado_id", id)
-      .gte("periodo", `${anio}-01-01`)
+      .gte("periodo", `${primerPeriodo}-01`)
       .lte("periodo", `${anio}-12-01`),
   ]);
 
@@ -58,7 +62,7 @@ async function HistorialContent({ params, searchParams }: HistorialProps) {
   const pagoPorPeriodo = new Map(pagos.data.map((pago) => [pago.periodo, pago]));
   const cuotas = [];
 
-  for (let mes = 12; mes >= 1; mes--) {
+  for (let mes = 12; mes >= primerMes; mes--) {
     const periodo = `${anio}-${String(mes).padStart(2, "0")}`;
     const pago = pagoPorPeriodo.get(`${periodo}-01`);
     const pendiente = muestraPendientes && periodo >= mesMatriculacion && periodo <= mesActual;
@@ -82,10 +86,9 @@ async function HistorialContent({ params, searchParams }: HistorialProps) {
             <input
               key={anio}
               name="anio"
-              inputMode="numeric"
-              pattern="(?!0000)[0-9]{4}"
-              title="Ingresá un año de cuatro dígitos mayor a cero"
-              maxLength={4}
+              type="number"
+              min={ANIO_MINIMO}
+              max={9999}
               required
               defaultValue={anio}
               className="h-10 w-24 rounded-lg border border-zinc-300 bg-white px-3 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50"

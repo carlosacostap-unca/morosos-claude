@@ -1,5 +1,6 @@
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { PERIODO_MINIMO_CUOTAS } from "@/lib/cuotas";
 import { SiteHeader } from "../site-header";
 import { createClient } from "@/lib/supabase/server";
 import { PagosPanel, type FilaPago } from "./pagos-panel";
@@ -7,15 +8,16 @@ import { PagosPanel, type FilaPago } from "./pagos-panel";
 async function PagosContent({
   searchParams,
 }: {
-  searchParams: Promise<{ periodo?: string }>;
+  searchParams: Promise<{ periodo?: string | string[] }>;
 }) {
   // La sesión y el mes actual dependen del momento del request: render dinámico.
   await connection();
   const { periodo: periodoParam } = await searchParams;
-  const periodo =
-    periodoParam && /^\d{4}-(0[1-9]|1[0-2])$/.test(periodoParam)
+  const periodoSolicitado =
+    typeof periodoParam === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(periodoParam)
       ? periodoParam
       : new Date().toISOString().slice(0, 7);
+  const periodo = periodoSolicitado < PERIODO_MINIMO_CUOTAS ? PERIODO_MINIMO_CUOTAS : periodoSolicitado;
 
   const supabase = await createClient();
   const [matriculados, pagos] = await Promise.all([
@@ -62,7 +64,7 @@ async function PagosContent({
 export default function PagosPage({
   searchParams,
 }: {
-  searchParams: Promise<{ periodo?: string }>;
+  searchParams: Promise<{ periodo?: string | string[] }>;
 }) {
   return (
     <div className="flex flex-1 flex-col bg-zinc-50 font-sans dark:bg-zinc-950">
